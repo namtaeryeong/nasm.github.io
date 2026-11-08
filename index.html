@@ -1,0 +1,971 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SCANO 백엔드 포트폴리오</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="남승민 · SCANO 졸업작품 백엔드 개발 포트폴리오 (FastAPI · SQLite · Gemini)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+img{max-width:100%}[hidden]{display:none!important}body{margin:0}
+/* Layout: long single-column case study, sticky section nav, backend = solid accent, team-owned parts = dashed neutral */
+:root{
+  --bg:#f4f5f3; --surface:#ffffff; --surface-2:#eceeea; --fg:#15171a; --muted:#5b6168; --line:#d9dcd6;
+  --accent:#ec5f12; --accent-soft:#fde9dc; --accent-ink:#b94304;
+  --team:#7a8088; --team-soft:#e7e9e6;
+  --ok:#1f8a4c; --warn:#b7791f; --bad:#c9302c;
+  --code-bg:#16181c; --code-fg:#e6e8ea; --code-muted:#8a929c; --code-key:#ff9a5c; --code-str:#9fd49a; --code-num:#f2c66d; --code-fn:#8fc1ff;
+  --f-display:"Black Han Sans","IBM Plex Sans KR",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r:10px; --wrap:1080px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111315; --surface:#1a1d20; --surface-2:#22262a; --fg:#eceeef; --muted:#a1a8b0; --line:#2f3439;
+  --accent:#ff7a33; --accent-soft:#3a2416; --accent-ink:#ffa36d;
+  --team:#8f979f; --team-soft:#24282c;
+  --ok:#4cc27e; --warn:#e0a84a; --bad:#ff6b66;
+  --code-bg:#0c0d0f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111315; --surface:#1a1d20; --surface-2:#22262a; --fg:#eceeef; --muted:#a1a8b0; --line:#2f3439;
+  --accent:#ff7a33; --accent-soft:#3a2416; --accent-ink:#ffa36d;
+  --team:#8f979f; --team-soft:#24282c;
+  --ok:#4cc27e; --warn:#e0a84a; --bad:#ff6b66;
+  --code-bg:#0c0d0f; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+.wrap{max-width:var(--wrap);margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+h1,h2,h3,h4{line-height:1.3;text-wrap:balance;margin:0}
+p{margin:0}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--surface-2);padding:.1em .38em;border-radius:5px}
+.mono{font-family:var(--f-mono)}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* nav */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:18px;height:54px}
+.brand{font-family:var(--f-display);font-size:20px;color:var(--accent);text-decoration:none;letter-spacing:.02em;flex:none}
+.nav ul{list-style:none;margin:0;padding:0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;min-width:0;flex:1}
+.nav ul::-webkit-scrollbar{display:none}
+.nav a.l{display:block;white-space:nowrap;text-decoration:none;font-size:14px;color:var(--muted);padding:6px 10px;border-radius:7px}
+.nav a.l:hover,.nav a.l.on{color:var(--fg);background:var(--surface-2)}
+.nav a.l.demo{color:var(--accent-ink);font-weight:600}
+
+/* hero */
+.hero{padding-block:56px 48px;background:var(--surface);border-bottom:1px solid var(--line)}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+.hero-txt{min-width:0;display:flex;flex-direction:column;gap:20px}
+.role{display:inline-flex;align-items:center;gap:10px;font-family:var(--f-mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-ink)}
+.role .dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.wordmark{font-family:var(--f-display);font-size:clamp(64px,11vw,112px);line-height:.9;letter-spacing:.01em;color:var(--fg)}
+.wordmark span{color:var(--accent)}
+.hero h1.sub{font-size:clamp(19px,2.4vw,24px);font-weight:600}
+.hero .lead{color:var(--muted);max-width:56ch}
+.who{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;color:var(--muted)}
+.who b{color:var(--fg);font-weight:600}
+.btns{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:9px;font-weight:600;font-size:15px;text-decoration:none;border:1px solid var(--line);background:var(--surface)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:hover{transform:translateY(-1px)}
+.btn svg{width:16px;height:16px;flex:none}
+.stack-row{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--f-mono);font-size:12.5px;padding:3px 9px;border-radius:6px;background:var(--surface-2);color:var(--fg);white-space:nowrap}
+.chip.acc{background:var(--accent-soft);color:var(--accent-ink)}
+.hero-vis{position:relative;min-width:0}
+.shot{border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--surface);box-shadow:0 18px 40px -22px rgba(0,0,0,.35)}
+.shot img{display:block;width:100%;height:auto}
+.hero-vis .s1{width:88%}
+.hero-vis .s2{width:78%;margin:-56px 0 0 auto;position:relative}
+.cap{font-size:12.5px;color:var(--muted);margin-top:10px;text-align:right}
+
+/* sections */
+section.sec{padding-block:72px 8px}
+.sec-head{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;align-items:baseline;margin-bottom:28px}
+.sec-no{font-family:var(--f-mono);font-size:13px;color:var(--accent-ink);border:1px solid var(--accent);border-radius:6px;padding:1px 8px}
+.sec-head h2{font-size:clamp(24px,3.2vw,32px);font-weight:700}
+.sec-head p{grid-column:2;color:var(--muted);max-width:64ch}
+@media (max-width:560px){.sec-head{grid-template-columns:1fr}.sec-head p{grid-column:1}.sec-no{justify-self:start}}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;min-width:0}
+.card h3{font-size:17px;margin-bottom:8px}
+.card p,.card li{color:var(--muted);font-size:15px}
+.card ul{margin:0;padding-left:18px}
+.label{font-family:var(--f-mono);font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+
+/* overview */
+.problem{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.kv{display:grid;grid-template-columns:110px 1fr;gap:10px 16px;font-size:15px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;min-width:0}
+.team{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.member{border:1px dashed var(--team);border-radius:9px;padding:14px;background:var(--team-soft)}
+.member.me{border:2px solid var(--accent);background:var(--accent-soft)}
+.member .n{font-weight:700} .member .r{font-size:13.5px;color:var(--muted)}
+.member.me .r{color:var(--accent-ink);font-weight:600}
+.feat li{margin-bottom:6px}
+.own{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:5px;margin-left:6px;vertical-align:1px;white-space:nowrap}
+.own.be{background:var(--accent);color:#fff}
+.own.tm{background:var(--team-soft);color:var(--team);border:1px solid var(--line)}
+
+/* architecture */
+.flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:24px}
+.step{border-radius:9px;padding:14px 12px;font-size:14px;border:1px dashed var(--team);background:var(--team-soft);position:relative}
+.step.be{border:2px solid var(--accent);background:var(--accent-soft)}
+.step b{display:block;font-size:14.5px;margin-bottom:2px}
+.step span{color:var(--muted);font-size:13px}
+.step .who2{display:block;margin-top:8px;font-size:12px;font-weight:600;color:var(--team)}
+.step.be .who2{color:var(--accent-ink)}
+.arch{display:grid;gap:12px}
+.lane{border-radius:12px;padding:18px;border:1px dashed var(--team);background:var(--team-soft)}
+.lane-h{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 12px;align-items:baseline;margin-bottom:12px}
+.lane-h b{font-size:16px}
+.lane-h span{font-size:13px;color:var(--muted)}
+.lane.be{border:2px solid var(--accent);background:var(--surface);box-shadow:0 0 0 6px var(--accent-soft)}
+.mods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mod{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--surface);min-width:0}
+.lane.be .mod{background:var(--bg)}
+.mod .mono{font-size:13px;color:var(--accent-ink);font-weight:600}
+.lane:not(.be) .mod .mono{color:var(--fg)}
+.mod p{font-size:13px;color:var(--muted)}
+.link{display:flex;justify-content:center;align-items:center;gap:10px;font-family:var(--f-mono);font-size:12.5px;color:var(--muted)}
+.link::before,.link::after{content:"";height:1px;width:40px;background:var(--line)}
+.figure{margin-top:20px}
+.figure .shot{box-shadow:none}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+
+/* core implementation */
+.impl{display:grid;gap:22px}
+.feature{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.f-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:20px 24px;border-bottom:1px solid var(--line)}
+.f-tag{font-family:var(--f-mono);font-size:12.5px;padding:3px 9px;border-radius:6px;background:var(--fg);color:var(--bg)}
+.f-head h3{font-size:20px;flex:1;min-width:200px}
+.f-file{font-family:var(--f-mono);font-size:13px;color:var(--accent-ink)}
+.f-body{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}
+.f-text{padding:22px 24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.f-text h4{font-size:12px;font-family:var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;font-weight:600}
+.f-text p,.f-text li{font-size:15px}
+.f-text ol{margin:0;padding-left:20px}
+.f-text ol li{margin-bottom:4px}
+.f-code{background:var(--code-bg);min-width:0;display:flex;flex-direction:column}
+.f-code .fn{font-family:var(--f-mono);font-size:12px;color:var(--code-muted);padding:12px 18px 0}
+pre{margin:0;overflow-x:auto;padding:12px 18px 18px;font-family:var(--f-mono);font-size:12.6px;line-height:1.65;color:var(--code-fg);tab-size:4}
+pre code{background:none;padding:0;font-size:inherit;border-radius:0}
+.f-result{border-top:1px solid var(--line);padding:16px 24px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;background:var(--bg)}
+.f-result .label{flex:none}
+.f-result p{font-size:14.5px;flex:1;min-width:220px}
+.f-result img{width:150px;border-radius:8px;border:1px solid var(--line);flex:none}
+.hljs-keyword,.hljs-built_in{color:var(--code-key)}
+.hljs-string{color:var(--code-str)}
+.hljs-number,.hljs-literal{color:var(--code-num)}
+.hljs-title,.hljs-title.function_{color:var(--code-fn)}
+.hljs-comment{color:var(--code-muted);font-style:italic}
+.hljs-meta,.hljs-attr{color:var(--code-fn)}
+.note{font-size:14px;border-left:3px solid var(--accent);padding:10px 14px;background:var(--accent-soft);border-radius:0 8px 8px 0;color:var(--fg)}
+.note.team{border-color:var(--team);background:var(--team-soft)}
+
+.trouble{display:grid;gap:12px;margin-top:28px}
+.tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.tr>div{padding:18px 20px;min-width:0}
+.tr .q{border-right:1px solid var(--line)}
+.tr .label{display:block;margin-bottom:6px}
+.tr .q .label{color:var(--bad)} .tr .a .label{color:var(--ok)}
+.tr p{font-size:15px}
+
+/* data & api */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12.5px;font-weight:600;color:var(--muted);background:var(--surface-2);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.mono,td .mono{font-size:13px}
+.m{font-family:var(--f-mono);font-size:12px;font-weight:600;padding:2px 7px;border-radius:5px;white-space:nowrap}
+.m.get{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.m.post{background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent-ink)}
+.tag-x{font-size:11.5px;font-weight:600;color:var(--team);border:1px solid var(--line);padding:1px 6px;border-radius:5px;white-space:nowrap}
+.seq{list-style:none;padding:0;margin:0;display:grid;gap:0;counter-reset:s}
+.seq li{display:grid;grid-template-columns:34px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);counter-increment:s;font-size:15px}
+.seq li:last-child{border-bottom:0}
+.seq li::before{content:counter(s);font-family:var(--f-mono);font-size:13px;font-weight:600;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-ink)}
+.seq li.t::before{background:var(--team-soft);color:var(--team)}
+.seq small{display:block;color:var(--muted);font-size:13.5px}
+.json{border-radius:var(--r);overflow:hidden;background:var(--code-bg)}
+
+/* eval bars */
+.bars{display:grid;gap:14px}
+.bar-row{display:grid;grid-template-columns:120px 1fr 74px;gap:12px;align-items:center;font-size:14px}
+.bar{height:14px;background:var(--surface-2);border-radius:7px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:7px}
+.bar-row .v{font-family:var(--f-mono);font-weight:600;text-align:right}
+.err{display:grid;gap:8px;margin-top:6px}
+.err div{display:grid;grid-template-columns:1fr auto;gap:10px;font-size:14px;padding:8px 0;border-top:1px solid var(--line)}
+.err b{font-family:var(--f-mono)}
+
+/* extras */
+.extra{border:1px dashed var(--team);background:var(--team-soft)}
+.extra .badge{display:inline-block;font-size:11.5px;font-weight:600;color:var(--team);border:1px solid var(--team);border-radius:5px;padding:0 6px;margin-bottom:10px}
+.extra h3{font-family:var(--f-mono);font-size:16px}
+
+/* demo */
+.video{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:0;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--surface);text-decoration:none}
+.video .thumb{position:relative;background:var(--accent);min-height:240px;overflow:hidden}
+.video .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.play{position:absolute;inset:0;display:grid;place-items:center}
+.play span{width:76px;height:76px;border-radius:50%;background:rgba(0,0,0,.72);display:grid;place-items:center;transition:transform .2s}
+.video:hover .play span{transform:scale(1.07)}
+.play svg{width:30px;height:30px;margin-left:4px;fill:#fff}
+.video .vt{padding:24px;display:flex;flex-direction:column;gap:10px;justify-content:center}
+.video .vt h3{font-size:19px}
+.video .vt p{color:var(--muted);font-size:14.5px}
+.video .go{color:var(--accent-ink);font-weight:600;font-size:15px}
+.gallery{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:20px}
+.gallery figure{margin:0;min-width:0}
+.gallery .shot{box-shadow:none;aspect-ratio:4/3.4;max-width:100%}
+.gallery .shot img{width:100%;height:100%;object-fit:cover;object-position:top}
+.deploy td:first-child{font-weight:600;white-space:nowrap}
+
+/* retro */
+.res{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.res .big{font-family:var(--f-mono);font-size:34px;font-weight:600;color:var(--accent-ink);line-height:1.1}
+.res .card p{margin-top:6px}
+
+/* end */
+.end{margin-top:72px;background:var(--surface);border-top:1px solid var(--line);padding-block:48px}
+.end .wrap{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center}
+.links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px}
+.lk{display:block;border:1px solid var(--line);border-radius:10px;padding:14px;text-decoration:none;background:var(--bg);min-width:0}
+.lk .label{display:block}
+.lk b{display:block;font-size:15px;overflow-wrap:anywhere}
+.lk.pending{border-style:dashed;color:var(--muted)}
+.qr{background:#fff;border-radius:12px;padding:12px;border:1px solid var(--line);text-align:center}
+.qr img{width:150px;height:150px;display:block}
+.qr span{font-size:12px;color:#444;display:block;margin-top:4px}
+.foot{font-size:13px;color:var(--muted);margin-top:28px}
+
+@media (max-width:900px){
+  .hero .wrap{grid-template-columns:1fr;gap:36px}
+  .f-body{grid-template-columns:1fr}
+  .g3,.res{grid-template-columns:1fr 1fr}
+  .flow{grid-template-columns:1fr 1fr}
+  .gallery{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .video{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  body{font-size:15.5px}
+  .hero{padding-block:36px 36px}
+  .g2,.g3,.res,.problem,.team,.mods,.tr,.links{grid-template-columns:1fr}
+  .tr .q{border-right:0;border-bottom:1px solid var(--line)}
+  .flow{grid-template-columns:1fr}
+  .f-head,.f-text,.f-result{padding-left:18px;padding-right:18px}
+  .f-result img{width:120px}
+  .end .wrap{grid-template-columns:1fr}
+  .qr{justify-self:start}
+  .bar-row{grid-template-columns:96px 1fr 64px}
+  .kv{grid-template-columns:88px 1fr}
+  section.sec{padding-block:56px 4px}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav" aria-label="섹션 이동">
+  <div class="wrap">
+    <a class="brand" href="#top">SCANO</a>
+    <ul>
+      <li><a class="l" href="#overview">개요</a></li>
+      <li><a class="l" href="#architecture">아키텍처</a></li>
+      <li><a class="l" href="#work">핵심 구현</a></li>
+      <li><a class="l" href="#data">DB · API</a></li>
+      <li><a class="l" href="#extras">부가 기능</a></li>
+      <li><a class="l demo" href="#demo">DEMO</a></li>
+      <li><a class="l" href="#retro">회고</a></li>
+      <li><a class="l" href="#stack">기술 스택</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div class="hero-txt">
+      <span class="role"><span class="dot"></span>Backend Developer · 남승민</span>
+      <div class="wordmark" aria-label="SCANO">SCAN<span>O</span></div>
+      <h1 class="sub">영양성분 시각화 기반 식욕 억제 지원 시스템</h1>
+      <p class="lead">온라인 쇼핑몰 상세 이미지에 흩어진 원재료·영양성분 텍스트를 정제해 판정 가능한 데이터로 바꾸고, 사용자의 다이어트 목표에 맞춰 <b>적합 · 주의 · 위험</b>을 알려주는 웹 서비스. 3인 팀 졸업작품에서 <b>FastAPI 백엔드 전체</b>를 맡았습니다.</p>
+      <div class="who"><span><b>협성대학교 컴퓨터공학과</b> 4조 졸업작품</span><span>개발 <b>2026.01 – 2026.05</b></span><span>팀 <b>3명</b> (백엔드 · 프론트엔드 · 크롤러)</span></div>
+      <div class="stack-row">
+        <span class="chip acc">Python</span><span class="chip acc">FastAPI</span><span class="chip acc">Pydantic</span><span class="chip acc">SQLite</span><span class="chip acc">Gemini 2.5 Flash</span><span class="chip acc">AWS EC2</span>
+      </div>
+      <div class="btns">
+        <a class="btn primary" href="https://youtu.be/XStKKaueOY4" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>시연 영상 보기</a>
+        <a class="btn" href="#work">핵심 구현 보기</a>
+        <a class="btn" href="https://github.com/mwolbono/SCANO-4team" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z"/></svg>GitHub</a>
+      </div>
+    </div>
+    <div class="hero-vis">
+      <div class="shot s1"><img src="img/main.jpg" alt="SCANO 메인 검색 화면" width="620" height="366"></div>
+      <div class="shot s2"><img src="img/verdict.jpg" alt="'다이어트 중이라면 참으세요' 위험 판정 카드" width="1182" height="365"></div>
+      <p class="cap">실제 서비스 화면 · 메인 검색과 위험 판정 카드</p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ② 개요 -->
+<section class="sec" id="overview">
+  <div class="sec-head"><span class="sec-no">02</span><h2>프로젝트 개요</h2><p>성분표는 있는데 판단으로 이어지지 않는 문제를 다뤘습니다.</p></div>
+  <div class="problem">
+    <div class="card">
+      <span class="label">해결하려 한 문제</span>
+      <h3 style="margin-top:6px">정보는 있지만, 쓸 수 있는 형태가 아니다</h3>
+      <ul>
+        <li>쇼핑몰 상품의 용량·원재료·영양성분이 <b>여러 장의 이미지</b>로 흩어져 있음</li>
+        <li>상품마다 표기 형식이 달라 <code>총 내용량 190g (100g당 500kcal)</code>처럼 계산이 필요한 경우가 많음</li>
+        <li>소비자의 50.3%가 “표시가 작고 복잡해서” 식품표시를 확인하지 않음 (정현영·김현아, 2016)</li>
+        <li>기존 식단 앱은 음식명 검색 위주라 <b>내 목표 기준</b>의 섭취 판단을 주지 않음</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="label">개발 목적</span>
+      <h3 style="margin-top:6px">수집 → 정제 → 판정을 한 흐름으로</h3>
+      <p>온라인 쇼핑몰(마켓컬리) 식품의 원재료·영양성분을 자동으로 수집·정제하고, 사용자의 신체정보와 다이어트 목표를 기준으로 섭취 적합성을 3단계로 판정해 합리적인 식품 선택을 돕습니다.</p>
+      <ul class="feat" style="margin-top:12px">
+        <li>상품 검색 · 실시간 크롤링 <span class="own tm">크롤러</span></li>
+        <li>비정형 텍스트 정제 · DB 대조 · API 응답 <span class="own be">백엔드</span></li>
+        <li>카메라 촬영 성분표 OCR 분석 <span class="own be">백엔드</span></li>
+        <li>Gemini 대체 식품 3종 추천 <span class="own be">백엔드</span></li>
+        <li>BMR 기반 3단계 판정 · 각설탕/밥공기 환산 화면 <span class="own tm">프론트엔드</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card">
+      <span class="label">팀 구성</span>
+      <div class="team" style="margin-top:12px">
+        <div class="member me"><div class="n">남승민</div><div class="r">조장 · 백엔드 (본인)</div></div>
+        <div class="member"><div class="n">이용하</div><div class="r">프론트엔드</div></div>
+        <div class="member"><div class="n">최용성</div><div class="r">크롤러</div></div>
+      </div>
+      <p style="margin-top:12px;font-size:13.5px">지도교수 한정란 · 졸업논문 「다중 이미지 OCR 기반 맞춤형 식이 적합성 판정 웹 시스템 구축」(2026.11)</p>
+    </div>
+    <div class="card">
+      <span class="label">나의 담당 역할</span>
+      <dl class="kv" style="margin-top:12px">
+        <dt>API 서버</dt><dd>FastAPI 라우팅, 크롤러 서버 중계, 응답 JSON 설계</dd>
+        <dt>데이터 정제</dt><dd>Pydantic 검증기 · 정규식으로 원재료/영양정보 표준화</dd>
+        <dt>OCR</dt><dd>Gemini Vision 추출 + 정규식 2차 파싱 파이프라인</dd>
+        <dt>DB</dt><dd>SQLite 스키마 설계, 기준 데이터 저장·매칭·갱신</dd>
+        <dt>AI 연동</dt><dd>대체 식품 추천 프롬프트 · 응답 파싱 · 장애 대비</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- ③ 아키텍처 -->
+<section class="sec" id="architecture">
+  <div class="sec-head"><span class="sec-no">03</span><h2>시스템 아키텍처</h2><p>주황색 실선이 제가 구현한 영역이고, 점선은 팀원이 담당한 외부 연동 영역입니다.</p></div>
+
+  <div class="flow" role="list">
+    <div class="step" role="listitem"><b>사용자 입력</b><span>검색어 · 카메라 촬영</span><em class="who2">프론트엔드 · 이용하</em></div>
+    <div class="step" role="listitem"><b>상품 데이터 수집</b><span>Selenium · Clova OCR · Gemini 1차 구조화</span><em class="who2">크롤러 · 최용성</em></div>
+    <div class="step be" role="listitem"><b>정제 · 검증</b><span>Pydantic 검증기 · 정규식 · Gemini Vision OCR</span><em class="who2">백엔드 · 본인</em></div>
+    <div class="step be" role="listitem"><b>DB 대조 · 분석</b><span>SQLite 기준 데이터 · 변동 탐지 · AI 추천</span><em class="who2">백엔드 · 본인</em></div>
+    <div class="step" role="listitem"><b>판정 · 시각화</b><span>BMR 기반 3단계 판정 · 환산 UI</span><em class="who2">프론트엔드 · 이용하</em></div>
+  </div>
+
+  <div class="arch">
+    <div class="lane">
+      <div class="lane-h"><b>Client · React / Vite SPA</b><span>Vercel 배포 · 팀원 담당</span></div>
+      <div class="mods">
+        <div class="mod"><span class="mono">검색 · 결과 목록</span><p>search-items 호출</p></div>
+        <div class="mod"><span class="mono">분석 보드</span><p>getDietJudge로 3단계 판정</p></div>
+        <div class="mod"><span class="mono">WebcamOCR</span><p>촬영 이미지를 ocr-scan으로 전송</p></div>
+      </div>
+    </div>
+    <div class="link">REST · JSON</div>
+    <div class="lane be">
+      <div class="lane-h"><b>Backend · FastAPI + Uvicorn</b><span>AWS EC2 · 본인 담당</span></div>
+      <div class="mods">
+        <div class="mod"><span class="mono">BACKEND_SERVER.py</span><p>API 라우터, 크롤러 중계, 분석 오케스트레이션</p></div>
+        <div class="mod"><span class="mono">ProductCollectRequest</span><p>Pydantic field_validator로 입력 시점 자동 정제</p></div>
+        <div class="mod"><span class="mono">vision_engine.py</span><p>Gemini Vision으로 성분표 원문 추출</p></div>
+        <div class="mod"><span class="mono">vision_parser.py</span><p>OCR 텍스트 정규식 파싱 · 열량 환산</p></div>
+        <div class="mod"><span class="mono">core_detector.py</span><p>기준 데이터 대비 용량·성분·영양 변동 비교</p></div>
+        <div class="mod"><span class="mono">standard_plaion.db</span><p>SQLite products 테이블 (DB_SETUP.py)</p></div>
+      </div>
+    </div>
+    <div class="link">ngrok HTTPS 터널</div>
+    <div class="lane">
+      <div class="lane-h"><b>Crawler · FastAPI + Selenium</b><span>별도 EC2 · 팀원 담당</span></div>
+      <div class="mods">
+        <div class="mod"><span class="mono">스크래퍼</span><p>마켓컬리 상세 페이지 수집</p></div>
+        <div class="mod"><span class="mono">Naver Clova OCR</span><p>상세 이미지 텍스트 추출</p></div>
+        <div class="mod"><span class="mono">Gemini (구조화)</span><p>상품명·용량·원재료·영양 1차 구조화</p></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="note" style="margin-top:20px"><b>이중 정제 구조.</b> 크롤러 경로의 데이터는 백엔드 진입 시 Pydantic 검증기가, 사용자가 촬영한 이미지는 vision_engine → vision_parser가 정규식 기반 2차 정제를 맡습니다. 두 경로가 같은 규칙으로 표준화되기 때문에 이후 판정 로직은 항상 같은 형태의 입력을 받습니다.</p>
+
+  <figure class="figure">
+    <div class="shot"><img src="img/modules.jpg" alt="백엔드 상세 모듈 구조도: BACKEND_SERVER.py를 중심으로 vision_engine, vision_parser, SQLite DB, 외부 크롤러 서버, core_detector가 연결된 흐름" width="2000" height="1051"></div>
+    <figcaption>백엔드 상세 모듈 구조도 (졸업논문 그림 6)</figcaption>
+  </figure>
+</section>
+
+<!-- ④ 핵심 구현 -->
+<section class="sec" id="work">
+  <div class="sec-head"><span class="sec-no">04</span><h2>담당 업무 및 핵심 구현</h2><p>업로드한 Python 소스에서 실제로 확인되는 기능만 정리했습니다. 코드는 원문에서 발췌했고, 생략한 부분은 <code># …</code>로 표시했습니다.</p></div>
+
+  <div class="impl">
+
+    <!-- F1 -->
+    <article class="feature">
+      <div class="f-head"><span class="f-tag">01</span><h3>비정형 텍스트 자동 정제 (Pydantic 검증기)</h3><span class="f-file">BACKEND_SERVER.py · ProductCollectRequest</span></div>
+      <div class="f-body">
+        <div class="f-text">
+          <div><h4>구현 목적</h4><p>크롤러가 넘겨주는 원재료·영양정보는 상품마다 괄호, 슬래시, 제조사 코드, 알레르기 문구가 뒤섞인 문자열입니다. 판정 로직이 이걸 그대로 받으면 매번 예외가 생기기 때문에, <b>요청이 서버에 들어오는 순간</b> 표준 형식으로 바꾸도록 설계했습니다.</p></div>
+          <div><h4>처리 과정</h4>
+            <ol>
+              <li>용량: 숫자 외 문자를 지워 <code>float</code>로 변환</li>
+              <li>원재료: NFKC 정규화 → 알레르기·제조시설 괄호 제거 → <code>-지엘</code> 같은 제조사 코드만 lookahead로 삭제 (<code>L-글루탐산</code>은 보존) → <code>아몬드/미국산</code>을 <code>아몬드(미국산)</code>으로 통합 → 중첩 괄호 계층 분리 → 중복 제거 · 정렬</li>
+              <li>영양정보: <code>총 내용량 Ng … Mg당 Kkcal</code> 패턴을 찾아 (N/M)×K로 총 열량 환산, 나머지 9개 항목은 키워드별 수치 추출 후 JSON 문자열로 저장</li>
+            </ol></div>
+          <div><h4>사용 기술</h4><div class="stack-row"><span class="chip">Pydantic v2 field_validator</span><span class="chip">re</span><span class="chip">unicodedata</span><span class="chip">json</span></div></div>
+        </div>
+        <div class="f-code">
+          <div class="fn">BACKEND_SERVER.py</div>
+<pre><code class="language-python">@field_validator('current_ingredients', mode='before')
+@classmethod
+def clean_ingredients(cls, v):
+    if isinstance(v, str):
+        v = unicodedata.normalize('NFKC', v).upper()
+        v = re.sub(r'\(.*?(함유|제조|시설).*?\)', '', v)
+        v = re.sub(r'-(지엘|믹스|MIX|씨제이|대상의|기타)(?=[,/\s:\]\)]|$)', '', v)
+        v = re.sub(r'([가-힣\w]+)/([가-힣\w]+)', r'\1(\2)', v)
+        v = re.sub(r'([가-힣\w]+)\(([^()]+)\(([^()]+)\)\)', r'\1, \2(\3)', v)
+        v = v.replace('[', ',').replace(']', ',').replace('{', ',').replace('}', ',')
+        items = [i.strip() for i in v.split(',') if i.strip()]
+        return ", ".join(sorted(list(set(items))))
+    return v
+
+@field_validator('current_nutrition', mode='before')
+@classmethod
+def parse_nutrition(cls, v):
+    # …
+    complex_match = re.search(
+        r"총\s*내용량\s*(?:(\d+)g)?.*?\(?(\d+)g당\s*(\d+)kcal\)?", v)
+    if complex_match:
+        total_g = int(complex_match.group(1)) if complex_match.group(1) \
+                  else int(complex_match.group(2))
+        ref_g = int(complex_match.group(2))
+        unit_kcal = int(complex_match.group(3))
+        if ref_g > 0:
+            parsed_nut['열량'] = float(int((total_g / ref_g) * unit_kcal))</code></pre>
+        </div>
+      </div>
+      <div class="f-result"><span class="label">결과</span><p>상품 100건 정제 결과를 원본과 대조한 평가에서 <b>필드 단위 98.71% (843/854)</b>, 9개 항목이 모두 맞아야 성공으로 치는 <b>상품 단위 93.00% (93/100)</b>를 기록했습니다.</p></div>
+    </article>
+
+    <!-- F2 -->
+    <article class="feature">
+      <div class="f-head"><span class="f-tag">02</span><h3>API 서버 · 크롤러 중계 · 분석 오케스트레이션</h3><span class="f-file">BACKEND_SERVER.py</span></div>
+      <div class="f-body">
+        <div class="f-text">
+          <div><h4>구현 목적</h4><p>프론트엔드는 백엔드 API 3개만 알면 되도록 하고, 실제 수집은 다른 네트워크에 있는 크롤러 서버에 위임했습니다. 백엔드가 수집 · 정제 · DB 대조 · AI 추천을 한 요청 안에서 조율합니다.</p></div>
+          <div><h4>처리 과정 · 상품 상세 분석</h4>
+            <ol>
+              <li><code>GET /product-detail/{kurly_id}</code> 수신</li>
+              <li>ngrok 주소의 크롤러 <code>/api/detail</code> 호출 (timeout 90s, 브라우저 경고 우회 헤더)</li>
+              <li>원본 JSON을 <code>ProductCollectRequest(**live_data)</code>로 검증·정제</li>
+              <li><code>perform_analysis()</code>에서 DB 조회 → 최초면 INSERT, 기존이면 변동 비교</li>
+              <li>Gemini 대체 식품 3종을 붙여 응답, <code>?update=true</code>면 기준 데이터 UPDATE</li>
+            </ol></div>
+          <div><h4>사용 기술</h4><div class="stack-row"><span class="chip">FastAPI</span><span class="chip">async / await</span><span class="chip">CORSMiddleware</span><span class="chip">requests</span><span class="chip">urllib.parse</span></div></div>
+        </div>
+        <div class="f-code">
+          <div class="fn">BACKEND_SERVER.py</div>
+<pre><code class="language-python">@app.get("/api/v1/product-detail/{kurly_id}")
+async def get_detail_analysis(kurly_id: str, update: bool = False):
+    try:
+        proxy_url = f"https://{CRAWLER_IP}/api/detail/{quote(kurly_id)}"
+        response = requests.get(proxy_url, timeout=90,
+                       headers={"ngrok-skip-browser-warning": "69420"})
+        if response.status_code != 200:
+            return {"status": "error", "message": "크롤러 상세 분석 실패"}
+
+        live_data = response.json()
+        # …
+        data_obj = ProductCollectRequest(**live_data)   # 진입 시점 정제
+        analysis_result = await perform_analysis(data_obj)
+
+        if update:
+            conn = get_db_connection(); cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE products
+                SET standard_weight = ?, ingredients = ?, nutrition_info = ?,
+                    collection_date = ?, image_url = ?, product_name = ?
+                WHERE kurly_id = ?
+            """, (f"{data_obj.current_weight}g", data_obj.current_ingredients,
+                  data_obj.current_nutrition, data_obj.collection_date,
+                  data_obj.image_url, data_obj.product_name.strip(), kurly_id))
+            conn.commit(); conn.close()
+        return analysis_result
+    except Exception as e:
+        return {"status": "error", "message": str(e)}</code></pre>
+        </div>
+      </div>
+      <div class="f-result"><img src="img/search.jpg" alt="'과자' 검색 결과 상품 카드 목록" width="785" height="408"><p>검색어 하나로 크롤러를 거쳐 마켓컬리 상품 목록이 반환되고, 상품을 누르면 상세 분석 API가 정제된 영양정보와 대체 식품을 함께 내려줍니다.</p></div>
+    </article>
+
+    <!-- F3 -->
+    <article class="feature">
+      <div class="f-head"><span class="f-tag">03</span><h3>카메라 촬영 성분표 OCR 파이프라인</h3><span class="f-file">vision_engine.py · vision_parser.py · /api/v1/ocr-scan</span></div>
+      <div class="f-body">
+        <div class="f-text">
+          <div><h4>구현 목적</h4><p>오프라인 매장에서도 성분표를 찍으면 검색 결과와 같은 분석을 받을 수 있도록 했습니다. OCR 모델을 직접 학습하는 대신 Gemini Vision에 추출 규칙을 지시하고, 결과는 정규식으로 다시 검증하는 구조를 택했습니다.</p></div>
+          <div><h4>처리 과정</h4>
+            <ol>
+              <li>업로드 이미지를 <code>uuid</code> 파일명으로 임시 저장 (처리 후 <code>finally</code>에서 삭제)</li>
+              <li>Gemini Vision에 <code>temperature=0.0</code>, “요약·정리 금지, 괄호·%·슬래시 그대로” 프롬프트로 1차 추출</li>
+              <li><code>parse_ocr_text()</code>가 번호 형식 라인을 읽어 상품명·용량·원재료·영양정보를 딕셔너리화. 열량 문장에 총량이 없으면 앞서 읽은 용량을 사용</li>
+              <li>공백을 무시한 상품명으로 DB 기준 데이터 매칭 → 변동 비교 → 대체 식품 추천</li>
+            </ol></div>
+          <div><h4>사용 기술</h4><div class="stack-row"><span class="chip">google-genai</span><span class="chip">gemini-2.5-flash</span><span class="chip">Pillow</span><span class="chip">UploadFile</span><span class="chip">re</span></div></div>
+        </div>
+        <div class="f-code">
+          <div class="fn">vision_engine.py</div>
+<pre><code class="language-python">response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents=[prompt, img],
+    config=types.GenerateContentConfig(
+        temperature=0.0,  # 데이터 일관성을 위해 0으로 고정
+        top_p=0.95))</code></pre>
+          <div class="fn">vision_parser.py · parse_ocr_text()</div>
+<pre><code class="language-python">if key == '열량' and ('당' in val_str or '내용량' in val_str):
+    complex_match = re.search(
+        r"(?:(\d+)g)?.*?\(?(\d+)g당\s*(\d+)kcal\)?", val_str)
+    if complex_match:
+        # 문장에 총량이 없으면 앞에서 추출한 용량을 사용
+        total_g = int(complex_match.group(1)) if complex_match.group(1) \
+                  else parsed_data["vol"]
+        ref_g = int(complex_match.group(2))
+        unit_kcal = int(complex_match.group(3))
+        if ref_g > 0:
+            parsed_data["nutrition"][key] = float(int((total_g / ref_g) * unit_kcal))
+            continue</code></pre>
+          <div class="fn">BACKEND_SERVER.py · /api/v1/ocr-scan</div>
+<pre><code class="language-python">clean_name = parsed_data['name'].replace(" ", "")
+cursor.execute(
+    "SELECT * FROM products WHERE REPLACE(product_name, ' ', '') = ?",
+    (clean_name,))</code></pre>
+        </div>
+      </div>
+      <div class="f-result"><img src="img/ocr.jpg" alt="모바일 카메라로 라면 봉지 성분표를 촬영하는 OCR 스캔 화면" width="802" height="540"><p>모바일 웹 카메라로 성분표를 촬영하면 <code>/ocr-scan</code>이 분석 결과를 돌려주고, 화면은 검색 결과와 같은 분석 보드로 전환됩니다. (카메라 화면 구현은 프론트엔드 담당)</p></div>
+    </article>
+
+    <!-- F4 -->
+    <article class="feature">
+      <div class="f-head"><span class="f-tag">04</span><h3>분석 결과 조립 · 판정용 데이터 전달</h3><span class="f-file">BACKEND_SERVER.py · perform_analysis()</span></div>
+      <div class="f-body">
+        <div class="f-text">
+          <div><h4>구현 목적</h4><p>3단계 판정(적합·주의·위험)은 사용자 BMR을 가진 프론트엔드의 <code>getDietJudge</code>가 수행합니다. 백엔드는 그 판정이 바로 쓸 수 있는 <b>정제된 영양 수치와 현재 용량</b>을 일정한 키로 내려주는 역할을 맡았습니다.</p></div>
+          <div><h4>처리 과정</h4>
+            <ol>
+              <li><code>product_name</code>으로 기준 데이터 조회</li>
+              <li>없으면 INSERT 후 <code>nutrition_facts</code> + 대체 식품만 반환 (<code>final_analysis: None</code>)</li>
+              <li>있으면 <code>core_detector.analyze_product()</code>로 변동 비교 결과를 <code>final_analysis.physical</code>에 담음</li>
+              <li><code>nutrition_facts</code>에 <code>current_weight</code>를 넣고, 형식이 깨진 경우에도 dict가 되도록 방어</li>
+            </ol></div>
+          <div><h4>사용 기술</h4><div class="stack-row"><span class="chip">sqlite3 (Row factory)</span><span class="chip">파라미터 바인딩</span><span class="chip">json</span></div></div>
+        </div>
+        <div class="f-code">
+          <div class="fn">BACKEND_SERVER.py · perform_analysis()</div>
+<pre><code class="language-python">conn = get_db_connection(); cursor = conn.cursor()
+cursor.execute("SELECT * FROM products WHERE product_name = ?",
+               (data.product_name.strip(),))
+past_reference = cursor.fetchone()
+
+if not past_reference:
+    cursor.execute("INSERT INTO products (product_name, standard_weight, "
+                   "ingredients, nutrition_info, collection_date, image_url, "
+                   "kurly_id) VALUES (?, ?, ?, ?, ?, ?, ?)", (...))
+    conn.commit(); conn.close()
+    # …
+    return {"status": "success", "message": "최초 등록 완료",
+            "nutrition_facts": display_nutrition,
+            "ai_alternatives_report": ai_alternatives,
+            "final_analysis": None}
+
+# 기존 상품: 기준 데이터와 대조
+physical_report = analyze_product(data.product_name, data.current_weight,
+                      live_ingredients_list, live_nut_dict, dict(past_reference))
+
+if isinstance(display_nutrition, dict):
+    display_nutrition["current_weight"] = data.current_weight
+else:
+    display_nutrition = {"current_weight": data.current_weight}</code></pre>
+        </div>
+      </div>
+      <div class="f-result"><img src="img/analysis.jpg" alt="영양 분석 탭: 칼로리 310kcal, 하루 권장량 대비 14%, 걷기 134분 환산" width="834" height="718"><p>백엔드가 내려준 열량·당류·탄수화물·지방 수치가 프론트엔드에서 하루 권장량 대비 비율, 각설탕·밥공기 환산, 운동 시간으로 시각화됩니다.</p></div>
+    </article>
+
+    <!-- F5 -->
+    <article class="feature">
+      <div class="f-head"><span class="f-tag">05</span><h3>Gemini 대체 식품 추천 · 응답 안정화</h3><span class="f-file">BACKEND_SERVER.py · get_ai_alternatives_report()</span></div>
+      <div class="f-body">
+        <div class="f-text">
+          <div><h4>구현 목적</h4><p>“먹지 마세요”로 끝나지 않고 대안을 함께 보여주기 위한 기능입니다. 생성형 AI 응답은 형식이 흔들리기 쉬워서, 프론트엔드가 그대로 카드로 그릴 수 있게 <b>출력 형식을 강제하고 파싱 실패에 대비</b>하는 데 집중했습니다.</p></div>
+          <div><h4>처리 과정</h4>
+            <ol>
+              <li>DB에 저장된 실제 상품명(없으면 요청 상품명)을 프롬프트에 넣음</li>
+              <li><code>image_emoji · name · reason</code> 3개짜리 JSON 배열만 출력하도록 지시</li>
+              <li>모델이 붙이는 <code>```json</code> 코드 펜스를 제거한 뒤 <code>json.loads</code></li>
+              <li>호출·파싱 실패 시 기본 추천 1건을 반환해 화면이 깨지지 않게 처리</li>
+            </ol></div>
+          <div><h4>사용 기술</h4><div class="stack-row"><span class="chip">google-genai</span><span class="chip">프롬프트 설계</span><span class="chip">예외 처리</span></div></div>
+        </div>
+        <div class="f-code">
+          <div class="fn">BACKEND_SERVER.py</div>
+<pre><code class="language-python">try:
+    response = genai_client.models.generate_content(
+        model='gemini-2.5-flash', contents=prompt)
+    raw_text = response.text.strip()
+
+    # AI가 ```json 마크다운을 붙여서 주면 떼어내는 방어 로직
+    if raw_text.startswith("```json"):
+        raw_text = raw_text[7:-3].strip()
+    elif raw_text.startswith("```"):
+        raw_text = raw_text[3:-3].strip()
+
+    alternatives = json.loads(raw_text)
+    return alternatives
+except Exception as e:
+    print(f"🚨 AI 대체품 추천 에러: {e}")
+    # 에러가 나도 앱이 터지지 않게 기본값 반환
+    return [{"image_emoji": "💧", "name": "시원한 물 한 잔",
+             "reason": "가짜 배고픔일 수 있습니다. 일단 물부터 드세요!"}]</code></pre>
+        </div>
+      </div>
+      <div class="f-result"><img src="img/alternatives.jpg" alt="AI 추천 대체 식품 카드: 닭가슴살 계란볶음밥, 현미밥과 두부구이, 직접 끓인 미소국수" width="525" height="428"><p>상세 분석과 OCR 스캔 두 경로 모두에서 같은 함수가 호출되어, 대체 식품 3종이 추천 사유와 함께 표시됩니다.</p></div>
+    </article>
+
+    <!-- F6 -->
+    <article class="feature">
+      <div class="f-head"><span class="f-tag">06</span><h3>기준 데이터 대비 변동 비교 탐지 <span class="own tm" style="font-size:12px">보조 기능</span></h3><span class="f-file">core_detector.py · analyze_product()</span></div>
+      <div class="f-body">
+        <div class="f-text">
+          <div><h4>구현 목적</h4><p>정제된 데이터를 어떻게 활용할 수 있는지 보여주는 응용 기능입니다. DB에 저장된 과거 기준과 현재 데이터를 비교해 용량 감소(슈링크플레이션), 원재료 삭제·추가·함량·원산지 변경(스킴플레이션), 영양 수치 변동을 구조화된 리포트로 만듭니다.</p></div>
+          <div><h4>처리 과정</h4>
+            <ol>
+              <li><code>extract_ingredient_meta()</code>로 <code>"아몬드(미국산) 76.492%"</code>를 이름·원산지·함량 객체로 분해</li>
+              <li>이름을 키로 한 맵끼리 비교해 삭제·추가 성분 추출, 같은 이름이면 함량 감소·원산지 변경 확인</li>
+              <li>영양성분 9개 항목은 차이가 0.1을 넘을 때만 변동으로 기록</li>
+            </ol></div>
+          <p class="note team" style="font-size:13.5px">이 결과를 바탕으로 한 AI 경고 문구(<code>get_ai_comprehensive_insight</code>)는 서버에서 생성되지만 시연 화면에는 노출하지 않았습니다.</p>
+        </div>
+        <div class="f-code">
+          <div class="fn">core_detector.py</div>
+<pre><code class="language-python">past_map = {m['name']: m for m in past_metas}
+live_map = {m['name']: m for m in live_metas}
+
+for name, past in past_map.items():
+    if name not in live_map:
+        removed_ings.append(past['raw'])
+    else:
+        curr = live_map[name]
+        if past['percent'] > 0 and curr['percent'] > 0:
+            if curr['percent'] < past['percent']:
+                origin_str = f"{past['origin']} " if past['origin'] else ""
+                skimp_warnings.append(
+                    f"{origin_str}{name} 함량 감소 "
+                    f"({past['percent']}% -> {curr['percent']}%)")
+        if past['origin'] and curr['origin'] \
+                and past['origin'] != curr['origin']:
+            skimp_warnings.append(
+                f"{name} 원산지 변경 ({past['origin']} -> {curr['origin']})")
+
+for name, curr in live_map.items():
+    if name not in past_map:
+        added_ings.append(curr['raw'])</code></pre>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <h3 style="margin-top:44px;font-size:21px">기술적으로 고민한 부분</h3>
+  <div class="trouble">
+    <div class="tr"><div class="q"><span class="label">문제</span><p>크롤링 데이터와 OCR 데이터가 서로 다른 모양으로 들어와, 판정 로직에서 경로마다 예외 처리가 필요했습니다.</p></div><div class="a"><span class="label">해결</span><p>정제를 “입구”로 옮겼습니다. 크롤링 경로는 Pydantic 검증기, OCR 경로는 <code>parse_ocr_text()</code>에 같은 정규식 규칙을 적용해 두 경로가 동일한 스키마로 수렴하도록 만들었습니다.</p></div></div>
+    <div class="tr"><div class="q"><span class="label">문제</span><p>제조사 코드 <code>-지엘</code>을 지우려고 하이픈 뒤를 지우면 <code>L-글루탐산</code> 같은 실제 성분명까지 깨졌습니다.</p></div><div class="a"><span class="label">해결</span><p>삭제 대상을 코드 목록으로 한정하고, 뒤에 구분자가 오는 경우만 매칭하는 lookahead <code>(?=[,/\s:\]\)]|$)</code>를 써서 성분명은 보존했습니다.</p></div></div>
+    <div class="tr"><div class="q"><span class="label">문제</span><p>Gemini가 성분표를 “보기 좋게” 요약하거나, 대체 식품 응답에 마크다운을 붙여 파싱이 실패하는 경우가 있었습니다.</p></div><div class="a"><span class="label">해결</span><p>OCR은 <code>temperature=0.0</code>과 원문 보존 지시로 자의적 해석을 줄였고, 추천은 JSON 배열만 허용 + 코드 펜스 제거 + 실패 시 기본값 반환으로 서비스가 멈추지 않게 했습니다.</p></div></div>
+    <div class="tr"><div class="q"><span class="label">문제</span><p>OCR로 읽은 상품명은 띄어쓰기가 DB와 달라 같은 상품인데도 매칭에 실패했습니다.</p></div><div class="a"><span class="label">해결</span><p>SQL에서 <code>REPLACE(product_name, ' ', '')</code>로 공백을 제거한 값끼리 완전 일치 비교하도록 바꿨습니다. 부분 일치(LIKE)보다 오매칭 위험이 낮습니다.</p></div></div>
+  </div>
+</section>
+
+<!-- ⑤ DB · API -->
+<section class="sec" id="data">
+  <div class="sec-head"><span class="sec-no">05</span><h2>데이터베이스 및 API</h2><p>별도 DB 서버 없이 백엔드와 같은 EC2에서 동작하는 단일 파일 SQLite를 사용했습니다.</p></div>
+
+  <div class="grid g2">
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:18px 20px 10px"><span class="label">products 테이블 · DB_SETUP.py</span></div>
+      <div class="tbl" style="border:0;border-radius:0;border-top:1px solid var(--line)">
+        <table>
+          <thead><tr><th>컬럼</th><th>타입</th><th>용도</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">id</td><td class="mono">INTEGER PK</td><td>AUTOINCREMENT</td></tr>
+            <tr><td class="mono">product_name</td><td class="mono">TEXT NOT NULL</td><td>검색 · 매칭 기준 키</td></tr>
+            <tr><td class="mono">kurly_id</td><td class="mono">TEXT</td><td>마켓컬리 상품 ID, 갱신 기준</td></tr>
+            <tr><td class="mono">standard_weight</td><td class="mono">TEXT</td><td>기준 용량 (예: 90.0g)</td></tr>
+            <tr><td class="mono">ingredients</td><td class="mono">TEXT</td><td>정제된 원재료 (정렬된 CSV)</td></tr>
+            <tr><td class="mono">nutrition_info</td><td class="mono">TEXT</td><td>영양정보 JSON 문자열</td></tr>
+            <tr><td class="mono">collection_date</td><td class="mono">TEXT</td><td>수집일 (비교 기준 시점)</td></tr>
+            <tr><td class="mono">image_url</td><td class="mono">TEXT</td><td>상품 이미지</td></tr>
+            <tr><td class="mono">category</td><td class="mono">TEXT</td><td>카테고리</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <span class="label">저장 데이터 예시 · standard_plaion.db</span>
+      <div class="json" style="margin-top:12px">
+<pre><code class="language-json">{
+  "product_name": "새우깡",
+  "kurly_id": "5061325",
+  "standard_weight": "90.0g",
+  "ingredients": "맛베이스조미분말, 미강유 5%, 새우(국산) 30%, ...",
+  "nutrition_info": {
+    "열량": 465.0, "나트륨": 500.0, "탄수화물": 40.0,
+    "당류": 1.0, "지방": 25.0, "포화지방": 8.0,
+    "트랜스지방": 0.5, "콜레스테롤": 5.0, "단백질": 12.0
+  },
+  "collection_date": "2026-03-23"
+}</code></pre>
+      </div>
+      <p style="margin-top:12px;font-size:14px">원재료는 정제 후 가나다순으로 정렬해 저장하므로, 수집 시점이 달라도 문자열 비교가 안정적입니다.</p>
+    </div>
+  </div>
+
+  <div class="tbl" style="margin-top:20px">
+    <table>
+      <thead><tr><th>Method</th><th>Endpoint</th><th>호출 주체</th><th>처리 내용</th></tr></thead>
+      <tbody>
+        <tr><td><span class="m get">GET</span></td><td class="mono">/api/v1/search-items/{query}</td><td>프론트엔드</td><td>검색어 디코딩 후 크롤러 <code>/api/search</code>로 중계, 상품 목록 반환 (timeout 15s)</td></tr>
+        <tr><td><span class="m get">GET</span></td><td class="mono">/api/v1/product-detail/{kurly_id}</td><td>프론트엔드</td><td>크롤러 상세 수집 → 정제 → DB 대조 → 대체 식품. <code>?update=true</code> 시 기준 데이터 갱신</td></tr>
+        <tr><td><span class="m post">POST</span></td><td class="mono">/api/v1/ocr-scan</td><td>프론트엔드</td><td>multipart 이미지 업로드 → Gemini Vision → 정규식 파싱 → DB 매칭 → 분석 결과</td></tr>
+        <tr><td><span class="m get">GET</span></td><td class="mono">/api/v1/trigger-crawl/{product_name}</td><td>관리자</td><td>상품명으로 크롤링 강제 실행, 기준 데이터 최신화 (timeout 100s)</td></tr>
+        <tr><td><span class="m get">GET</span></td><td class="mono">/api/v1/monitoring-board</td><td>—</td><td>소비자원 PDF 모니터링 데이터 반환 <span class="tag-x">부가 기능 · 미시연</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid g2" style="margin-top:20px">
+    <div class="card">
+      <span class="label">요청 처리 흐름 · 상품 상세 분석</span>
+      <ol class="seq" style="margin-top:8px">
+        <li class="t"><div>사용자가 검색 결과에서 상품 선택<small>프론트엔드 → <code>GET /product-detail/{kurly_id}</code></small></div></li>
+        <li><div>크롤러 서버로 상세 수집 요청 중계<small>ngrok HTTPS, timeout 90s</small></div></li>
+        <li class="t"><div>상세 이미지 수집 · Clova OCR · Gemini 1차 구조화<small>크롤러 담당 영역</small></div></li>
+        <li><div>Pydantic 검증기로 용량·원재료·영양정보 정제<small>ProductCollectRequest(**live_data)</small></div></li>
+        <li><div>SQLite 기준 데이터 조회 · INSERT 또는 변동 비교<small>perform_analysis() · core_detector</small></div></li>
+        <li><div>Gemini 대체 식품 3종 생성 후 JSON 응답<small>nutrition_facts · final_analysis · ai_alternatives_report</small></div></li>
+        <li class="t"><div>BMR 기반 3단계 판정과 환산 시각화<small>프론트엔드 getDietJudge</small></div></li>
+      </ol>
+    </div>
+    <div class="card">
+      <span class="label">응답 구조 · 키는 코드 기준, 값은 예시</span>
+      <div class="json" style="margin-top:12px">
+<pre><code class="language-json">{
+  "status": "success",
+  "product_name": "새우깡",
+  "image_url": "https://...",
+  "nutrition_facts": {
+    "열량": 465.0, "당류": 1.0, "탄수화물": 40.0,
+    "지방": 25.0, "나트륨": 500.0, "current_weight": 90.0
+  },
+  "final_analysis": {
+    "physical": {
+      "is_danger": false,
+      "detected_issues": [],
+      "shrinkflation": { "past_vol": 90.0, "live_vol": 90.0 },
+      "skimpflation": { "removed_ingredients": [], "added_ingredients": [] },
+      "overall_summary": "✨ 확인결과: ..."
+    },
+    "nlp": null
+  },
+  "ai_alternatives_report": [
+    { "image_emoji": "🥗", "name": "...", "reason": "..." }
+  ]
+}</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <span class="label">정제 로직 정량 평가 · 상품 100건, 영양성분 9종</span>
+    <div class="grid g2" style="margin-top:16px;gap:28px">
+      <div class="bars">
+        <div class="bar-row"><span>필드 단위</span><div class="bar" role="img" aria-label="98.71%"><i style="width:98.71%"></i></div><span class="v tnum">98.71%</span></div>
+        <div class="bar-row"><span>상품 단위</span><div class="bar" role="img" aria-label="93.00%"><i style="width:93%"></i></div><span class="v tnum">93.00%</span></div>
+        <p style="font-size:13.5px;color:var(--muted)">정제 전 원본 DB(standard_plaion_raw.db)와 정제 결과 DB를 대조. 필드 단위는 값이 존재하는 854개 항목 중 일치 843개, 상품 단위는 9개 항목이 모두 일치한 상품 93개.</p>
+      </div>
+      <div>
+        <span style="font-size:14px;font-weight:600">실패 7건 원인</span>
+        <div class="err">
+          <div><span>기준량 표기 역전 · 단위 오독</span><b>2</b></div>
+          <div><span>권장량(%) 표기와 수치 경계 겹침</span><b>2</b></div>
+          <div><span>1회 제공량(30g 등) 비정형 환산 실패</span><b>2</b></div>
+          <div><span>구분자 없는 영양정보 일괄 유실</span><b>1</b></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ⑥ 부가 기능 -->
+<section class="sec" id="extras">
+  <div class="sec-head"><span class="sec-no">06</span><h2>추가 구현 및 실험 기능</h2><p>확장 가능성을 보고 작성한 부가 코드입니다. 최종 시연에서는 사용하지 않았으므로 핵심 구현과 구분합니다.</p></div>
+  <div class="grid g3">
+    <div class="card extra"><span class="badge">시연 미사용</span><h3>api_kurly.py</h3><p style="margin-top:8px">마켓컬리 리뷰 API로 상품 리뷰를 수집하고 응답 구조 차이를 흡수해 별점·본문·작성일로 통일하는 실험 코드. 리뷰가 부족한 상품을 위한 시연용 샘플 리뷰 데이터도 포함되어 있습니다.</p></div>
+    <div class="card extra"><span class="badge">시연 미사용</span><h3>core_nlp.py</h3><p style="margin-top:8px">리뷰 본문을 용량·품질 관련 키워드 사전과 매칭하고 별점 평균·부정 리뷰 수를 더해 여론을 판정하는 규칙 기반 분석 실험.</p></div>
+    <div class="card extra"><span class="badge">시연 미사용</span><h3>api_pdf.py</h3><p style="margin-top:8px">한국소비자원 분기별 슈링크플레이션 모니터링 PDF에서 pdfplumber로 표를 추출해, 여러 줄로 합쳐진 셀을 행 단위로 분리하고 JSON으로 캐싱하는 파서.</p></div>
+  </div>
+  <p class="note team" style="margin-top:16px">세 모듈은 서버 코드에 연결 지점(<code>perform_analysis</code>의 리뷰 분석, <code>/monitoring-board</code>)이 남아 있지만, 시연 화면에서는 결과를 사용하지 않았습니다. 향후 리뷰 기반 정성 분석이나 공공 데이터 연동으로 확장할 때 쓸 수 있도록 모듈 단위로 분리해 두었습니다.</p>
+</section>
+
+<!-- ⑦ 시연 · 배포 -->
+<section class="sec" id="demo">
+  <div class="sec-head"><span class="sec-no">07</span><h2>DEMO · 실제 시연 및 배포</h2><p>실제 구동 모습과 개발 인터뷰는 시연 영상에서 확인할 수 있습니다.</p></div>
+
+  <a class="video" href="https://youtu.be/XStKKaueOY4" target="_blank" rel="noopener">
+    <div class="thumb"><img src="img/main.jpg" alt="" width="620" height="366"><div class="play"><span><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span></div></div>
+    <div class="vt">
+      <span class="label">YouTube</span>
+      <h3>[졸업작품] SCANO - 식품 영양정보 자동 분석 시스템 시연 및 개발 인터뷰</h3>
+      <p>상품 검색부터 영양 분석·판정, 카메라 OCR 스캔, 대체 식품 추천까지 전체 흐름을 보여줍니다.</p>
+      <span class="go">영상 보러 가기 →</span>
+    </div>
+  </a>
+
+  <div class="gallery">
+    <figure><div class="shot"><img src="img/search.jpg" alt="검색 결과 화면"></div><figcaption>검색 결과</figcaption></figure>
+    <figure><div class="shot"><img src="img/sugar.jpg" alt="당류 각설탕 4개 분량 환산 화면"></div><figcaption>당류 환산 분석</figcaption></figure>
+    <figure><div class="shot"><img src="img/settings.jpg" alt="신체 정보 입력과 BMR 설정 화면"></div><figcaption>BMR 설정</figcaption></figure>
+    <figure><div class="shot"><img src="img/ocr.jpg" alt="OCR 스캔 화면"></div><figcaption>OCR 스캔</figcaption></figure>
+  </div>
+
+  <div class="tbl deploy" style="margin-top:24px">
+    <table>
+      <thead><tr><th>구성</th><th>배포 환경</th><th>담당</th></tr></thead>
+      <tbody>
+        <tr><td>백엔드 API 서버</td><td>AWS EC2 (Ubuntu) · FastAPI + Uvicorn · SQLite 파일 DB 동일 인스턴스</td><td><span class="own be" style="margin:0">본인</span></td></tr>
+        <tr><td>크롤러 서버</td><td>별도 AWS EC2 · FastAPI + Selenium · ngrok HTTPS 터널로 백엔드와 연결</td><td><span class="own tm" style="margin:0">최용성</span></td></tr>
+        <tr><td>프론트엔드</td><td>Vercel 정적 호스팅 · React + Vite</td><td><span class="own tm" style="margin:0">이용하</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:12px;font-size:14px;color:var(--muted)">전시회 시연 이후 서버 비용 문제로 EC2 인스턴스는 중지된 상태이며, 현재 동작은 시연 영상으로 확인할 수 있습니다.</p>
+</section>
+
+<!-- ⑧ 회고 -->
+<section class="sec" id="retro">
+  <div class="sec-head"><span class="sec-no">08</span><h2>프로젝트 결과 및 회고</h2></div>
+  <div class="res">
+    <div class="card"><div class="big tnum">98.71%</div><h3 style="margin-top:8px">정제 정확도</h3><p>상품 100건 · 854개 영양 필드 기준. 상품 단위 전 항목 일치는 93.00%.</p></div>
+    <div class="card"><div class="big tnum">2 → 1</div><h3 style="margin-top:8px">수집 경로 통합</h3><p>크롤링 경로와 카메라 OCR 경로를 같은 정제 규칙과 응답 스키마로 통합.</p></div>
+    <div class="card"><div class="big tnum">3 + 2</div><h3 style="margin-top:8px">API 엔드포인트</h3><p>프론트용 3개(검색·상세·OCR)와 관리자·부가용 2개로 역할을 나눈 REST API.</p></div>
+  </div>
+
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card">
+      <h3>개발 과정에서 겪은 어려움</h3>
+      <ul>
+        <li>초기에 주제를 넓게 잡아 개발 도중 판정·탐지 로직을 여러 번 바꿨습니다. 기능의 중심(영양 판정)과 부가 기능(변동 탐지, 리뷰 분석)을 늦게 구분한 것이 원인이었습니다.</li>
+        <li>정규식 정제는 표준 형식에서는 안정적이었지만, 기준량이 뒤집힌 표기나 구분자가 없는 텍스트에서 실패했습니다. 평가로 실패 유형을 4가지로 분류해 다음 개선 대상을 명확히 했습니다.</li>
+        <li>크롤러가 다른 네트워크에 있어 ngrok 주소와 응답 시간에 의존했고, 크롤러 응답 실패를 error JSON으로 돌려주는 처리를 추가했습니다.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>얻은 역량</h3>
+      <ul>
+        <li>외부 서버·AI API가 섞인 요청을 하나의 API로 조율하는 서버 설계</li>
+        <li>신뢰할 수 없는 입력을 진입 시점에서 검증·정규화하는 습관 (Pydantic, 정규식)</li>
+        <li>생성형 AI 결과를 규칙 기반 로직으로 재검증하는 이중 처리 구조</li>
+        <li>기능을 “돌아간다”가 아니라 정확도 수치로 검증하는 평가 방식</li>
+        <li>프론트·크롤러 담당과 데이터 키·응답 형식을 맞추는 협업</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3>향후 개선 방향</h3>
+    <div class="tbl" style="margin-top:10px">
+      <table>
+        <thead><tr><th>현재 코드</th><th>개선 방향</th></tr></thead>
+        <tbody>
+          <tr><td>정규식이 실패하면 열량 환산이 누락됨</td><td>비정형 패턴 예외 규칙 추가, 정규식 실패 시 Gemini 재파싱을 보조 수단으로 적용</td></tr>
+          <tr><td>상세 분석의 기준 데이터를 <code>product_name</code>으로 조회</td><td>쇼핑몰 고유 ID(<code>kurly_id</code>) 기준 매칭으로 동명·표기 차이 오매칭 방지</td></tr>
+          <tr><td><code>async</code> 함수 안에서 동기 <code>requests</code> · Gemini 호출</td><td><code>httpx.AsyncClient</code> 등 비동기 클라이언트로 바꿔 동시 요청 시 이벤트 루프 블로킹 해소</td></tr>
+          <tr><td>CORS <code>allow_origins=["*"]</code>, 크롤러 주소 하드코딩</td><td>허용 도메인을 프론트 배포 주소로 제한하고, 크롤러 주소를 환경 변수로 분리</td></tr>
+          <tr><td>대체 식품 추천이 상품 DB와 연동되지 않음</td><td>products 테이블의 검증된 상품을 우선 추천하도록 연동</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ⑨ 기술 스택 -->
+<section class="sec" id="stack">
+  <div class="sec-head"><span class="sec-no">09</span><h2>기술 스택</h2><p>백엔드 코드에서 실제로 import해서 사용한 것만 적었습니다.</p></div>
+  <div class="grid g3">
+    <div class="card"><span class="label">Language · Framework</span><div class="stack-row" style="margin-top:10px"><span class="chip acc">Python</span><span class="chip acc">FastAPI</span><span class="chip acc">Uvicorn</span><span class="chip acc">Pydantic v2</span></div></div>
+    <div class="card"><span class="label">Database</span><div class="stack-row" style="margin-top:10px"><span class="chip acc">SQLite (sqlite3)</span></div></div>
+    <div class="card"><span class="label">AI · OCR</span><div class="stack-row" style="margin-top:10px"><span class="chip acc">google-genai</span><span class="chip acc">Gemini 2.5 Flash</span><span class="chip acc">Pillow</span></div></div>
+    <div class="card"><span class="label">Data Processing</span><div class="stack-row" style="margin-top:10px"><span class="chip">re</span><span class="chip">unicodedata</span><span class="chip">json</span><span class="chip">pdfplumber (부가)</span></div></div>
+    <div class="card"><span class="label">Network · Infra</span><div class="stack-row" style="margin-top:10px"><span class="chip">requests</span><span class="chip">ngrok</span><span class="chip">AWS EC2</span><span class="chip">python-dotenv</span></div></div>
+    <div class="card"><span class="label">Collaboration</span><div class="stack-row" style="margin-top:10px"><span class="chip">Git</span><span class="chip">GitHub</span><span class="chip">VS Code</span></div></div>
+  </div>
+</section>
+</main>
+
+<footer class="end">
+  <div class="wrap">
+    <div>
+      <span class="label">Links</span>
+      <h2 style="font-size:24px;margin-top:4px">남승민 · Backend Developer</h2>
+      <div class="links">
+        <a class="lk" href="https://github.com/mwolbono/SCANO-4team" target="_blank" rel="noopener"><span class="label">Team Repository</span><b>github.com/mwolbono/SCANO-4team</b></a>
+        <a class="lk" href="https://youtu.be/XStKKaueOY4" target="_blank" rel="noopener"><span class="label">Demo Video</span><b>youtu.be/XStKKaueOY4</b></a>
+        <a class="lk" href="#work"><span class="label">Core Work</span><b>핵심 구현 다시 보기</b></a>
+      </div>
+      <p class="foot">협성대학교 컴퓨터공학과 4조 졸업작품 SCANO · 프론트엔드(이용하)·크롤러(최용성) 화면과 기능은 팀원 작업이며, 이 포트폴리오는 본인이 담당한 백엔드를 중심으로 작성했습니다.</p>
+    </div>
+    
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+try{ if(window.hljs){ document.querySelectorAll('pre code').forEach(function(el){ hljs.highlightElement(el); }); } }catch(e){}
+(function(){
+  var links=[].slice.call(document.querySelectorAll('.nav a.l'));
+  var map={}; links.forEach(function(a){ map[a.getAttribute('href').slice(1)]=a; });
+  if(!('IntersectionObserver' in window)) return;
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ links.forEach(function(a){a.classList.remove('on')}); var a=map[e.target.id]; if(a){ a.classList.add('on'); try{ a.scrollIntoView({block:'nearest',inline:'nearest'}) }catch(_){} } } });
+  },{rootMargin:'-45% 0px -50% 0px'});
+  document.querySelectorAll('section.sec').forEach(function(s){ io.observe(s); });
+})();
+</script>
+
+</body>
+</html>
