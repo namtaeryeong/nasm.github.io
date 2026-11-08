@@ -162,8 +162,8 @@ pre{margin:0;overflow-x:auto;padding:12px 18px 18px;font-family:var(--f-mono);fo
 pre code{background:none;padding:0;font-size:inherit;border-radius:0}
 .f-result{border-top:1px solid var(--line);padding:16px 24px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;background:var(--bg)}
 .f-result .label{flex:none}
-.f-result p{font-size:14.5px;flex:1;min-width:220px}
-.f-result img{width:150px;border-radius:8px;border:1px solid var(--line);flex:none}
+.f-result p{font-size:15px;flex:1 1 260px;min-width:0}
+.f-result img{display:block;width:min(400px,100%);height:auto;border-radius:10px;border:1px solid var(--line);flex:none;background:var(--surface)}
 .hljs-keyword,.hljs-built_in{color:var(--code-key)}
 .hljs-string{color:var(--code-str)}
 .hljs-number,.hljs-literal{color:var(--code-num)}
@@ -266,7 +266,7 @@ td.mono,td .mono{font-size:13px}
   .tr .q{border-right:0;border-bottom:1px solid var(--line)}
   .flow{grid-template-columns:1fr}
   .f-head,.f-text,.f-result{padding-left:18px;padding-right:18px}
-  .f-result img{width:120px}
+  .f-result img{width:100%}
   .end .wrap{grid-template-columns:1fr}
   .qr{justify-self:start}
   .bar-row{grid-template-columns:96px 1fr 64px}
@@ -298,7 +298,7 @@ td.mono,td .mono{font-size:13px}
     <div class="hero-txt">
       <span class="role"><span class="dot"></span>Backend Developer · 남승민</span>
       <div class="wordmark" aria-label="SCANO">SCAN<span>O</span></div>
-      <h1 class="sub">영양성분 시각화 기반 식욕 억제 지원 시스템</h1>
+      <h1 class="sub">다중 이미지 OCR 기반<br>맞춤형 식이 적합성 판정 웹 시스템 구축</h1>
       <p class="lead">온라인 쇼핑몰 상세 이미지에 흩어진 원재료·영양성분 텍스트를 정제해 판정 가능한 데이터로 바꾸고, 사용자의 다이어트 목표에 맞춰 <b>적합 · 주의 · 위험</b>을 알려주는 웹 서비스. 3인 팀 졸업작품에서 <b>FastAPI 백엔드 전체</b>를 맡았습니다.</p>
       <div class="who"><span><b>협성대학교 컴퓨터공학과</b> 4조 졸업작품</span><span>개발 <b>2026.01 – 2026.05</b></span><span>팀 <b>3명</b> (백엔드 · 프론트엔드 · 크롤러)</span></div>
       <div class="stack-row">
@@ -949,7 +949,7 @@ for name, curr in live_map.items():
       </div>
       <p class="foot">협성대학교 컴퓨터공학과 4조 졸업작품 SCANO · 프론트엔드(이용하)·크롤러(최용성) 화면과 기능은 팀원 작업이며, 이 포트폴리오는 본인이 담당한 백엔드를 중심으로 작성했습니다.</p>
     </div>
-    
+    <div class="qr" id="qr-box"><img src="img/qr.png" alt="이 포트폴리오로 연결되는 QR 코드" width="150" height="150"><span>이 페이지 QR</span></div>
   </div>
 </footer>
 
